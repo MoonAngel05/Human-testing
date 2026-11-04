@@ -26,14 +26,49 @@ const games = {
     description: "Triff den Kreis so oft wie möglich, bevor die 15 Sekunden vorbei sind.",
     icon: "◎",
     color: "#ff7297"
+  },
+  stroop: {
+    title: "Stroop-Test",
+    category: "KONZENTRATION",
+    description: "Wähle die tatsächliche Schriftfarbe – nicht das gelesene Wort.",
+    icon: "🎨",
+    color: "#f472b6"
+  },
+  numbers: {
+    title: "Zahlenreihen",
+    category: "LOGIK",
+    description: "Erkenne das Muster und ergänze die nächste Zahl.",
+    icon: "∑",
+    color: "#60a5fa"
+  },
+  colors: {
+    title: "Farbgedächtnis",
+    category: "GEDÄCHTNIS",
+    description: "Merke dir die Farbsequenz und wiederhole sie in der richtigen Reihenfolge.",
+    icon: "▦",
+    color: "#fbbf24"
+  },
+  visual: {
+    title: "Fehler finden",
+    category: "WAHRNEHMUNG",
+    description: "Finde das eine andere Symbol im Feld – so schnell du kannst.",
+    icon: "⌕",
+    color: "#34d399"
+  },
+  impulse: {
+    title: "Impulskontrolle",
+    category: "SELBSTKONTROLLE",
+    description: "Klicke nur bei Grün. Bei Rot musst du deinen Impuls kontrollieren.",
+    icon: "✋",
+    color: "#fb923c"
   }
 };
 
 const storageKey = "reflexArenaSave";
 const defaultState = {
   username: "",
-  scores: { reaction: 0, click: 0, memory: 0, aim: 0 },
-  records: { reaction: null, click: null, memory: null, aim: null }
+  scores: { reaction: 0, click: 0, memory: 0, aim: 0, stroop: 0, numbers: 0, colors: 0, visual: 0, impulse: 0 },
+  records: { reaction: null, click: null, memory: null, aim: null, stroop: null, numbers: null, colors: null, visual: null, impulse: null }
 };
 
 let state = loadState();
@@ -203,6 +238,11 @@ function startGame() {
   if (currentGame === "click") startClickChallenge();
   if (currentGame === "memory") startMemory();
   if (currentGame === "aim") startAim();
+  if (currentGame === "stroop") startStroop();
+  if (currentGame === "numbers") startNumbers();
+  if (currentGame === "colors") startColors();
+  if (currentGame === "visual") startVisualSearch();
+  if (currentGame === "impulse") startImpulse();
 }
 
 function finishGame(points, performance, label) {
@@ -212,7 +252,7 @@ function finishGame(points, performance, label) {
 
   state.scores[currentGame] += points;
   const oldRecord = state.records[currentGame];
-  if (performance !== null && performance !== undefined && (!oldRecord || performance > oldRecord.value)) {
+  if (!oldRecord || performance > oldRecord.value) {
     state.records[currentGame] = { value: performance, label };
   }
 
@@ -241,7 +281,7 @@ function startReaction() {
 
   box.addEventListener("click", () => {
     if (!ready) {
-      finishGame(0, null, "Zu früh geklickt – 0 Punkte");
+      finishGame(0, -1, "Zu früh geklickt – 0 Punkte");
       return;
     }
     const milliseconds = Date.now() - startTime;
@@ -374,6 +414,262 @@ function startAim() {
     }
   }, 1000));
 }
+
+
+/* Spiel 5: Stroop-Test */
+function startStroop() {
+  const colors = [
+    { name: "ROT", value: "#ff5d73" },
+    { name: "BLAU", value: "#60a5fa" },
+    { name: "GRÜN", value: "#34d399" },
+    { name: "GELB", value: "#fbbf24" }
+  ];
+  let round = 0;
+  let correct = 0;
+  let locked = false;
+  const totalRounds = 15;
+
+  function nextRound() {
+    if (runFinished) return;
+    if (round >= totalRounds) {
+      finishGame(correct * 10, correct, `${correct} von ${totalRounds} richtig · ${correct * 10} Punkte`);
+      return;
+    }
+    round++;
+    const word = colors[Math.floor(Math.random() * colors.length)];
+    let ink = colors[Math.floor(Math.random() * colors.length)];
+    while (ink.name === word.name) ink = colors[Math.floor(Math.random() * colors.length)];
+    const options = [...colors].sort(() => Math.random() - 0.5);
+    const area = document.getElementById("game-area");
+    area.innerHTML = `
+      <div class="challenge-content">
+        <p class="game-message">Runde ${round} / ${totalRounds} · Welche Farbe hat die Schrift?</p>
+        <div class="stroop-word" style="color:${ink.value}">${word.name}</div>
+        <div class="choice-grid">${options.map(c => `<button class="button button-secondary choice-button" data-color="${c.name}">${c.name}</button>`).join("")}</div>
+        <p class="game-message">Richtig: ${correct}</p>
+      </div>`;
+    area.querySelectorAll("[data-color]").forEach(button => {
+      button.addEventListener("click", () => {
+        if (locked || runFinished) return;
+        locked = true;
+        if (button.dataset.color === ink.name) correct++;
+        setTimeout(() => { locked = false; nextRound(); }, 250);
+      });
+    });
+  }
+  nextRound();
+}
+
+/* Spiel 6: Zahlenreihen – ohne Kopfrechnen-Challenge */
+function startNumbers() {
+  const patterns = [
+    { start: 2, step: 2 },
+    { start: 3, step: 3 },
+    { start: 5, step: 5 },
+    { start: 1, step: 3 },
+    { start: 10, step: -1 },
+    { start: 2, step: 4 }
+  ];
+  let round = 0;
+  let points = 0;
+  function nextRound() {
+    if (runFinished) return;
+    if (round >= 8) {
+      finishGame(points, points, `${points / 10} von 8 Reihen richtig · ${points} Punkte`);
+      return;
+    }
+    round++;
+    const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+    const sequence = Array.from({ length: 5 }, (_, i) => pattern.start + pattern.step * i);
+    const answer = sequence[4] + pattern.step;
+    const area = document.getElementById("game-area");
+    area.innerHTML = `
+      <div class="challenge-content">
+        <p class="game-message">Reihe ${round} / 8 · Welche Zahl fehlt?</p>
+        <div class="number-sequence">${sequence.slice(0, 4).join("　")}　<strong>?</strong></div>
+        <form id="number-form">
+          <input id="number-answer" class="game-input" type="number" inputmode="numeric" placeholder="Nächste Zahl" required>
+          <button class="button button-primary" type="submit">Antwort prüfen</button>
+        </form>
+        <p class="game-message">Punkte: ${points}</p>
+      </div>`;
+    const input = document.getElementById("number-answer");
+    input.focus();
+    document.getElementById("number-form").addEventListener("submit", event => {
+      event.preventDefault();
+      if (Number(input.value) === answer) points += 10;
+      nextRound();
+    });
+  }
+  nextRound();
+}
+
+/* Spiel 7: Farbgedächtnis */
+function startColors() {
+  const palette = ["red", "blue", "green", "yellow"];
+  const sequence = [];
+  let round = 0;
+  let accepting = false;
+  let userIndex = 0;
+  const area = document.getElementById("game-area");
+
+  function renderBoard(message) {
+    area.innerHTML = `
+      <div class="challenge-content">
+        <p class="game-message">${message}</p>
+        <div class="color-board">
+          ${palette.map(color => `<button class="color-pad pad-${color}" data-pad="${color}" aria-label="${color}"></button>`).join("")}
+        </div>
+        <p class="game-message">Länge der Sequenz: ${sequence.length}</p>
+      </div>`;
+    area.querySelectorAll("[data-pad]").forEach(button => {
+      button.addEventListener("click", () => {
+        if (!accepting || runFinished) return;
+        const chosen = button.dataset.pad;
+        if (chosen !== sequence[userIndex]) {
+          finishGame(round * 10, round, `${round} Runden geschafft · ${round * 10} Punkte`);
+          return;
+        }
+        userIndex++;
+        if (userIndex === sequence.length) {
+          accepting = false;
+          round++;
+          timers.push(setTimeout(showNext, 650));
+        }
+      });
+    });
+  }
+  function showNext() {
+    if (runFinished) return;
+    sequence.push(palette[Math.floor(Math.random() * palette.length)]);
+    userIndex = 0;
+    accepting = false;
+    renderBoard(`Runde ${round + 1}: Schau dir die Farben an …`);
+    const pads = [...area.querySelectorAll("[data-pad]")];
+    sequence.forEach((color, index) => {
+      timers.push(setTimeout(() => {
+        pads.forEach(p => p.classList.remove("lit"));
+        const pad = area.querySelector(`[data-pad="${color}"]`);
+        if (pad) pad.classList.add("lit");
+        timers.push(setTimeout(() => pad && pad.classList.remove("lit"), 330));
+      }, 650 + index * 650));
+    });
+    timers.push(setTimeout(() => {
+      if (runFinished) return;
+      accepting = true;
+      renderBoard(`Jetzt nachspielen – Runde ${round + 1}`);
+    }, 650 + sequence.length * 650));
+  }
+  showNext();
+}
+
+/* Spiel 8: Fehler finden */
+function startVisualSearch() {
+  let hits = 0;
+  let seconds = 30;
+  const area = document.getElementById("game-area");
+  const symbols = ["●", "○"];
+  function newGrid() {
+    if (runFinished) return;
+    const odd = Math.random() < 0.5 ? "●" : "○";
+    const common = odd === "●" ? "○" : "●";
+    const oddIndex = Math.floor(Math.random() * 36);
+    area.innerHTML = `
+      <div class="challenge-content">
+        <div id="visual-timer" class="timer">${seconds} Sekunden</div>
+        <p id="visual-score" class="game-message">Gefunden: ${hits}</p>
+        <div class="visual-grid">
+          ${Array.from({length: 36}, (_, i) => `<button class="visual-cell" data-index="${i}" aria-label="Symbol ${i + 1}">${i === oddIndex ? odd : common}</button>`).join("")}
+        </div>
+      </div>`;
+    area.querySelectorAll(".visual-cell").forEach(button => {
+      button.addEventListener("click", () => {
+        if (runFinished) return;
+        if (Number(button.dataset.index) === oddIndex) {
+          hits++;
+          newGrid();
+        } else {
+          button.classList.add("wrong");
+          timers.push(setTimeout(() => button.classList.remove("wrong"), 300));
+        }
+      });
+    });
+  }
+  newGrid();
+  timers.push(setInterval(() => {
+    seconds--;
+    const timer = document.getElementById("visual-timer");
+    if (timer) timer.textContent = `${seconds} Sekunden`;
+    if (seconds <= 0) finishGame(hits * 5, hits, `${hits} Symbole gefunden · ${hits * 5} Punkte`);
+  }, 1000));
+}
+
+/* Spiel 9: Impulskontrolle */
+function startImpulse() {
+  let trial = 0;
+  let score = 0;
+  let falseStarts = 0;
+  let active = false;
+  let shouldClick = false;
+  const total = 12;
+  const area = document.getElementById("game-area");
+
+  function nextTrial() {
+    if (runFinished) return;
+    if (trial >= total) {
+      finishGame(Math.max(0, score * 10 - falseStarts * 5), score - falseStarts,
+        `${score} richtige Reaktionen · ${falseStarts} Fehlklicks`);
+      return;
+    }
+    trial++;
+    shouldClick = Math.random() > 0.4;
+    active = false;
+    area.innerHTML = `
+      <div class="challenge-content">
+        <p class="game-message">Durchgang ${trial} / ${total}</p>
+        <div id="impulse-signal" class="impulse-signal ${shouldClick ? "signal-wait" : "signal-stop"}">${shouldClick ? "WARTEN …" : "NICHT KLICKEN"}</div>
+        <button id="impulse-button" class="button button-primary" ${shouldClick ? "" : "disabled"}>JETZT KLICKEN</button>
+        <p class="game-message">Richtige Reaktionen: ${score} · Fehlklicks: ${falseStarts}</p>
+      </div>`;
+    const button = document.getElementById("impulse-button");
+    button.addEventListener("click", () => {
+      if (runFinished) return;
+      if (!active || !shouldClick) {
+        falseStarts++;
+        nextTrial();
+        return;
+      }
+      score++;
+      nextTrial();
+    });
+    if (shouldClick) {
+      const delay = 900 + Math.random() * 1700;
+      timers.push(setTimeout(() => {
+        if (runFinished) return;
+        active = true;
+        const signal = document.getElementById("impulse-signal");
+        if (signal) {
+          signal.textContent = "GRÜN – KLICKEN!";
+          signal.classList.remove("signal-wait");
+          signal.classList.add("signal-go");
+        }
+        button.disabled = false;
+      }, delay));
+      button.disabled = true;
+      timers.push(setTimeout(() => {
+        if (runFinished || !active) return;
+        falseStarts++;
+        nextTrial();
+      }, delay + 1200));
+    } else {
+      button.disabled = false;
+      button.textContent = "NICHT KLICKEN";
+      timers.push(setTimeout(nextTrial, 1300));
+    }
+  }
+  nextTrial();
+}
+
 
 document.getElementById("back-to-games").addEventListener("click", () => {
   clearTimers();
