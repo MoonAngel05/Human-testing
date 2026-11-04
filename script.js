@@ -212,7 +212,7 @@ function finishGame(points, performance, label) {
 
   state.scores[currentGame] += points;
   const oldRecord = state.records[currentGame];
-  if (!oldRecord || performance > oldRecord.value) {
+  if (performance !== null && performance !== undefined && (!oldRecord || performance > oldRecord.value)) {
     state.records[currentGame] = { value: performance, label };
   }
 
@@ -241,7 +241,7 @@ function startReaction() {
 
   box.addEventListener("click", () => {
     if (!ready) {
-      finishGame(0, -1, "Zu früh geklickt – 0 Punkte");
+      finishGame(0, null, "Zu früh geklickt – 0 Punkte");
       return;
     }
     const milliseconds = Date.now() - startTime;
