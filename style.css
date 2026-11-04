@@ -144,3 +144,39 @@ footer span:first-child { color: var(--purple); font-weight: 800; letter-spacing
   .game-area { padding: 16px; min-height: 270px; }
   footer { gap: 12px; }
 }
+
+
+/* Ergänzungen: Fokus, Spielzustände und bessere Darstellung auf kleinen Displays */
+:focus-visible {
+  outline: 3px solid var(--cyan);
+  outline-offset: 3px;
+}
+button:disabled { cursor: not-allowed; opacity: .65; }
+.game-card { display: flex; flex-direction: column; align-items: flex-start; }
+.game-card .card-record { margin-top: auto; padding-top: 14px; }
+.button-primary { box-shadow: 0 8px 24px rgba(81, 228, 209, .12); }
+.button-primary:active { transform: translateY(0) scale(.98); }
+.game-area > div { width: 100%; }
+#click-button { min-width: 180px; min-height: 64px; font-size: 20px; }
+.aim-target { padding: 0; }
+.record-row { transition: border-color .2s ease, transform .2s ease; }
+.record-row:hover { border-color: rgba(81, 228, 209, .35); }
+.profile-info input:focus, .game-input:focus {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+@media (max-width: 800px) {
+  .hero { grid-template-columns: 1fr 0.85fr; }
+  .game-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 580px) {
+  .hero { grid-template-columns: 1fr; }
+  .section-heading { align-items: flex-start; }
+  .section-heading h2 { font-size: 21px; }
+  .game-card { min-height: 180px; }
+  .record-row { align-items: flex-start; }
+  .record-value { max-width: 45%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
