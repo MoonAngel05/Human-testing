@@ -1,0 +1,125 @@
+:root {
+  color-scheme: dark;
+  --bg: #10111b;
+  --panel: #191a27;
+  --panel-light: #202131;
+  --text: #f5f5fb;
+  --muted: #9a9bad;
+  --purple: #a78bfa;
+  --cyan: #51e4d1;
+  --border: rgba(255, 255, 255, 0.09);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at 50% -20%, #28203f 0, var(--bg) 48%);
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.hub {
+  width: min(960px, 92%);
+  padding: 48px 0;
+  text-align: center;
+}
+
+.eyebrow {
+  color: var(--cyan);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+h1 {
+  margin: 14px 0;
+  font-size: clamp(42px, 7vw, 68px);
+  letter-spacing: -0.05em;
+  line-height: 1.05;
+}
+
+.accent {
+  background: linear-gradient(90deg, var(--purple), var(--cyan));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.lead {
+  margin: 0 auto 40px;
+  max-width: 520px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.game {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 280px;
+  padding: 26px;
+  text-align: left;
+  text-decoration: none;
+  color: inherit;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.game:hover,
+.game:focus-visible {
+  transform: translateY(-6px);
+  background: var(--panel-light);
+  border-color: var(--c);
+  outline: none;
+}
+
+.icon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 22px;
+  border-radius: 14px;
+  font-size: 26px;
+  color: var(--c);
+  background: color-mix(in srgb, var(--c) 14%, transparent);
+}
+
+.game h2 { margin: 0 0 8px; font-size: 24px; }
+.game p { margin: 0; color: var(--muted); line-height: 1.6; font-size: 14px; }
+
+.tag {
+  margin-top: 16px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--c);
+}
+
+.go {
+  margin-top: auto;
+  padding-top: 18px;
+  font-weight: 800;
+  color: var(--c);
+}
+
+@media (max-width: 700px) {
+  .grid { grid-template-columns: 1fr; }
+  .game { min-height: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: 0.01ms !important; }
+}

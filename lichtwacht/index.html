@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lichtwacht – Tower Defense</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="app">
+    <header id="hud">
+      <a href="../index.html" style="color:#adb5bd;text-decoration:none;font-size:0.9rem;">← Spielauswahl</a>
+      <h1>Lichtwacht</h1>
+      <div class="stat" title="Glut: Währung für neue Wächter">🔥 <span id="glut">0</span></div>
+      <div class="stat">Welle <span id="wave">0</span>/<span id="waveTotal">0</span></div>
+      <div class="stat" title="Leben des Leuchtturms">Leuchtturm <span id="base" class="hearts"></span></div>
+      <button id="pauseBtn" type="button">Pause (P)</button>
+    </header>
+
+    <section id="cards" aria-label="Wächter-Auswahl"></section>
+
+    <div id="stage">
+      <canvas id="game" width="900" height="500"></canvas>
+      <div id="overlay">
+        <h2 id="overlayTitle"></h2>
+        <p id="overlayText"></p>
+        <button id="overlayBtn" type="button"></button>
+      </div>
+    </div>
+
+    <p class="hint">
+      Wächter wählen (Klick oder Taste 1–4), dann auf ein Feld klicken. Leuchtende Funken einsammeln, um Glut zu erhalten.
+      Schaufel: Taste S. Pause: Taste P.
+    </p>
+  </main>
+
+  <script src="game.js"></script>
+</body>
+</html>
